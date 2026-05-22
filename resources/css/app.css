@@ -1,0 +1,149 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Archivo', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: "Merriweather Sans", sans-serif;
+
+    --color-background: #f6f7f1;
+    --color-surface: #eef2ea;
+    --color-dark: #173227;
+    --color-muted-foreground: #66786f;
+    --color-primary: #0f7a5b;
+    --color-primary-dark: #0b5f46;
+    --color-primary-light: #d7efe7;
+    --color-accent: #c89b3c;
+    --color-primary-foreground: #ffffff;
+    --color-border: #d7e1db;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-background text-dark font-sans antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-display font-semibold tracking-tight text-dark;
+    }
+
+    strong {
+        @apply font-semibold;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--color-primary) 28%, white);
+        color: var(--color-dark);
+    }
+}
+
+@layer utilities {
+    .bg-gradient-emerald {
+        background-image: linear-gradient(135deg, #0f7a5b 0%, #0b5f46 55%, #114737 100%);
+    }
+
+    .bg-gradient-emerald-deep {
+        background-image: radial-gradient(circle at top left, rgba(15, 122, 91, 0.82), transparent 48%),
+            linear-gradient(135deg, #0b5f46 0%, #173227 100%);
+    }
+
+    .text-gradient-emerald {
+        background-image: linear-gradient(135deg, #0f7a5b 0%, #c89b3c 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+    }
+
+    .glass {
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(18px);
+    }
+
+    .noise {
+        background-image: linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+        background-size: 18px 18px;
+    }
+
+    .stack-group .stack-card {
+        transform: translateY(0);
+        transition: transform 250ms ease, box-shadow 250ms ease;
+    }
+
+    .stack-group:hover .stack-card:not(:hover) {
+        transform: translateY(8px);
+    }
+
+    .blur-siblings:hover .gallery-item:not(:hover) {
+        filter: blur(2px);
+        opacity: 0.72;
+    }
+}
+
+@keyframes marquee-left {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.animate-marquee-left {
+    animation: marquee-left 30s linear infinite;
+}
+
+.animate-fade-up {
+    animation: fade-up 700ms ease both;
+}
+
+.animate-fade-in {
+    animation: fade-in 350ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-marquee-left,
+    .animate-fade-up,
+    .animate-fade-in {
+        animation: none;
+    }
+}
