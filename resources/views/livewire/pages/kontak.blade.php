@@ -9,6 +9,12 @@
                 <p class="text-muted-foreground mt-2">Isi formulir di bawah, kami akan menghubungi Anda.</p>
 
                 <div class="mt-8 space-y-5">
+                    <div class="hidden" aria-hidden="true">
+                        <label for="website">Website</label>
+                        <input wire:model="website" id="website" type="text" tabindex="-1" autocomplete="off"
+                            class="hidden">
+                    </div>
+
                     <div>
                         <label class="text-sm font-medium text-dark">Nama Lengkap</label>
                         <input wire:model.blur="name" required
@@ -51,14 +57,19 @@
                         @enderror
                     </div>
 
-                    <button type="submit"
-                        class="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary-dark transition shadow-lg shadow-primary/30">
+                    <button type="submit" wire:loading.attr="disabled" wire:target="send"
+                        class="inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-primary text-primary-foreground font-medium hover:bg-primary-dark transition shadow-lg shadow-primary/30 disabled:opacity-60 disabled:cursor-not-allowed">
                         <x-site.icon name="Send" class="size-4" />
-                        Kirim Pesan
+                        <span wire:loading.remove wire:target="send">Kirim</span>
+                        <span wire:loading wire:target="send">Mengirim...</span>
                     </button>
 
                     @if ($sent)
-                        <p class="text-sm text-primary mt-2">Pesan terkirim. Terima kasih.</p>
+                        <div wire:key="contact-success-{{ $sentVersion }}" x-data="{ visible: true }"
+                            x-init="setTimeout(() => visible = false, 4000)" x-show="visible" x-transition
+                            class="rounded-2xl border border-primary-light bg-primary-light/60 px-4 py-3 text-sm text-primary-dark">
+                            Pesan terkirim. Terima kasih.
+                        </div>
                     @endif
                 </div>
             </form>
