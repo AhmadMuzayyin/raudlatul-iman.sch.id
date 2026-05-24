@@ -6,14 +6,14 @@
             @foreach ($struktur as $item)
                 <div class="group text-center">
                     <div class="relative aspect-square overflow-hidden rounded-3xl">
-                        <img src="{{ $item['img'] }}" alt="{{ $item['name'] }}"
+                        <img src="{{ asset('storage' . '/' . $item['photo']) }}" alt="{{ $item['name'] }}"
                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
                         <div
                             class="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent opacity-0 group-hover:opacity-100 transition">
                         </div>
                     </div>
                     <h3 class="mt-5 font-display text-xl text-dark">{{ $item['name'] }}</h3>
-                    <p class="text-primary text-sm">{{ $item['role'] }}</p>
+                    <p class="text-primary text-sm">{{ $item['jabatan'] }}</p>
                 </div>
             @endforeach
         </div>

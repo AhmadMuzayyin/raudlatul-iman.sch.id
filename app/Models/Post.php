@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -11,12 +12,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable('institution_id', 'category_id', 'slug', 'title', 'content', 'status')]
+#[Fillable('user_id', 'institution_id', 'category_id', 'slug', 'title', 'content', 'status')]
 class Post extends Model
 {
+    protected $appends = ['image'];
+
     public function scopePublished(Builder $query): Builder
     {
         return $query->where('status', 'published');
+    }
+
+    protected function image(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): ?string => $this->firstImageUrlFromContent($this->content ?? ''),
+        );
     }
 
     protected static function booted(): void
@@ -141,6 +151,11 @@ class Post extends Model
         });
     }
 
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function institution(): BelongsTo
     {
         return $this->belongsTo(Institution::class);
@@ -156,6 +171,11 @@ class Post extends Model
         return $this->hasOne(Seo::class);
     }
 
+    public function postViews(): HasMany
+    {
+        return $this->hasMany(PostView::class, 'post_id');
+    }
+
     public function postTags(): HasMany
     {
         return $this->hasMany(PostTag::class, 'post_id');
@@ -164,5 +184,44 @@ class Post extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class, 'post_tags', 'post_id', 'tag_id');
+    }
+
+    private function firstImageUrlFromContent(string $content): ?string
+    {
+        if (! filled($content)) {
+            return null;
+        }
+
+        libxml_use_internal_errors(true);
+
+        $document = new \DOMDocument;
+        $document->loadHTML('<?xml encoding="utf-8" ?><div>'.$content.'</div>');
+
+        foreach ($document->getElementsByTagName('img') as $image) {
+            foreach (['src', 'data-src', 'data-lazy-src', 'data-original'] as $attribute) {
+                if (! $image->hasAttribute($attribute)) {
+                    continue;
+                }
+
+                $url = trim($image->getAttribute($attribute));
+
+                if (filled($url)) {
+                    libxml_clear_errors();
+
+                    return $url;
+                }
+            }
+        }
+
+        libxml_clear_errors();
+
+        return null;
+    }
+
+    protected function viewsCount(): Attribute
+    {
+        return Attribute::make(
+            get: fn (): int => $this->postViews()->count(),
+        );
     }
 }

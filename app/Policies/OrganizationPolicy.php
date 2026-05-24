@@ -12,7 +12,7 @@ class OrganizationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 
     /**
@@ -20,7 +20,7 @@ class OrganizationPolicy
      */
     public function view(User $user, Organization $organization): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 
     /**
@@ -28,7 +28,7 @@ class OrganizationPolicy
      */
     public function create(User $user): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 
     /**
@@ -36,7 +36,7 @@ class OrganizationPolicy
      */
     public function update(User $user, Organization $organization): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 
     /**
@@ -44,7 +44,7 @@ class OrganizationPolicy
      */
     public function delete(User $user, Organization $organization): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 
     /**
@@ -52,7 +52,7 @@ class OrganizationPolicy
      */
     public function restore(User $user, Organization $organization): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 
     /**
@@ -60,6 +60,6 @@ class OrganizationPolicy
      */
     public function forceDelete(User $user, Organization $organization): bool
     {
-        return  $user->role === 'admin' || $user->role === 'editor' || $user->role === 'moderator';
+        return $user->role === 'admin';
     }
 }

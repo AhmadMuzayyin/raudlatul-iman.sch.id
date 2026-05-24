@@ -13,7 +13,14 @@ class ManageOrganizations extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah')
+                ->icon('heroicon-o-plus')
+                ->modalHeading('Tambah Struktur Organisasi')
+                ->modalDescription('Silakan isi data struktur organisasi dengan benar.')
+                ->modalSubmitActionLabel('Simpan')
+                ->modalCancelActionLabel('Batal')
+                ->createAnotherAction(fn ($action) => $action->label('Simpan dan tambah lagi')),
         ];
     }
 }

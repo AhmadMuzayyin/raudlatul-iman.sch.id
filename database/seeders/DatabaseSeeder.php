@@ -31,11 +31,6 @@ class DatabaseSeeder extends Seeder
             'meta_keywords' => 'buat kata kunci yang relevan dengan lembaga anda, pisahkan dengan koma',
             'contact_email' => 'email lembaga anda',
             'contact_phone' => 'nomor telepon lembaga anda',
-            'og_title' => 'judul yang akan ditampilkan saat link dibagikan di media sosial',
-            'og_description' => 'deskripsi yang akan ditampilkan saat link dibagikan di media sosial',
-            'og_image' => 'https://via.placeholder.com/1200x630',
-            'canonical_url' => 'Url website utama anda',
-            'robots' => true,
             'maintenance_mode' => false,
             'enable_comments' => true,
         ]);

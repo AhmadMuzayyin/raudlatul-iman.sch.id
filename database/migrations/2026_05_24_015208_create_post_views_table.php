@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Post;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -11,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('facilities', function (Blueprint $table) {
+        Schema::create('post_views', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->string('icon')->nullable();
+            $table->foreignIdFor(Post::class)->constrained()->cascadeOnDelete();
+            $table->string('ip_address', 45)->unique();
+            $table->json('user_agent')->nullable();
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('facilities');
+        Schema::dropIfExists('post_views');
     }
 };

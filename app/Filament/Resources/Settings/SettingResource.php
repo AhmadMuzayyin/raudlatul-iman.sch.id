@@ -6,7 +6,6 @@ use App\Filament\Resources\Settings\Pages\ManageSettings;
 use App\Models\Setting;
 use BackedEnum;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -14,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use UnitEnum;
@@ -52,18 +52,6 @@ class SettingResource extends Resource
                 TextInput::make('contact_phone')
                     ->tel()
                     ->default(null),
-                TextInput::make('og_title')
-                    ->default(null),
-                Textarea::make('og_description')
-                    ->default(null)
-                    ->columnSpanFull(),
-                FileUpload::make('og_image')
-                    ->image(),
-                TextInput::make('canonical_url')
-                    ->url()
-                    ->default(null),
-                Toggle::make('robots')
-                    ->required(),
                 Toggle::make('maintenance_mode')
                     ->required(),
                 Toggle::make('enable_comments')
@@ -76,15 +64,16 @@ class SettingResource extends Resource
         return $table
             ->recordTitleAttribute('Pengaturan')
             ->columns([
+                ImageColumn::make('logo')
+                    ->label('Logo')
+                    ->circular(),
+                ImageColumn::make('favicon')
+                    ->label('Favicon')
+                    ->circular(),
                 TextColumn::make('contact_email')
                     ->label('Email'),
                 TextColumn::make('contact_phone')
                     ->label('Telepon'),
-                TextColumn::make('canonical_url')
-                    ->label('URL Kanonik'),
-                IconColumn::make('robots')
-                    ->label('Robots')
-                    ->boolean(),
                 IconColumn::make('maintenance_mode')
                     ->label('Mode Pemeliharaan')
                     ->boolean(),

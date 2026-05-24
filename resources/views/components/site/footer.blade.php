@@ -1,7 +1,3 @@
-@php
-    $year = now()->year;
-@endphp
-
 <footer class="relative bg-dark text-white/80 overflow-hidden">
     <div class="absolute inset-0 noise opacity-30 pointer-events-none"></div>
     <div class="absolute -top-32 -left-32 size-96 bg-primary/20 rounded-full blur-3xl"></div>
@@ -11,7 +7,7 @@
         <div class="grid lg:grid-cols-4 gap-10">
             <div>
                 <div class="flex items-center gap-3 mb-4">
-                    <img src="{{ $settings->logo }}"
+                    <img src="{{ $settings->logo }}" alt="{{ $settings->logo }} logo"
                         class="size-11 rounded-full bg-gradient-emerald grid place-items-center text-white font-display text-xl shadow-lg shadow-primary/30 group-hover:scale-105 transition">
                     <div>
                         <div class="font-display text-lg text-white">Raudlatul Iman</div>

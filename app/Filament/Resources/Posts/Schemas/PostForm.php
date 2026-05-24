@@ -2,10 +2,10 @@
 
 namespace App\Filament\Resources\Posts\Schemas;
 
-use App\Models\Category;
-use App\Models\Institution;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\RichEditor\ToolbarButtonGroup;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -14,6 +14,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class PostForm
@@ -24,46 +25,19 @@ class PostForm
             ->components([
                 Section::make('Konten')
                     ->schema([
+                        Hidden::make('user_id')
+                            ->default(fn (): ?int => Auth::id())
+                            ->required(),
                         Select::make('institution_id')
                             ->label('Lembaga')
                             ->placeholder('Pilih Lembaga')
                             ->relationship('institution', 'name')
-                            ->required()
-                            ->afterStateUpdated(function (Get $get, Set $set, ?int $state): void {
-                                $institution = Institution::find($state);
-                                $code = $institution?->code ?? '';
-
-                                $category = Category::find($get('category_id'));
-                                $categorySlug = $category?->slug ?? (filled($category?->name) ? Str::slug($category->name) : '');
-
-                                $slug = $get('slug') ?? '';
-
-                                $base = rtrim(config('app.url') ?? url('/'), '/');
-
-                                if ($code && $categorySlug && $slug) {
-                                    $set('default_url', $base.'/'.$code.'/'.$categorySlug.'/'.$slug);
-                                }
-                            }),
+                            ->required(),
                         Select::make('category_id')
                             ->label('Kategori')
                             ->placeholder('Pilih Kategori')
                             ->relationship('category', 'name')
-                            ->required()
-                            ->afterStateUpdated(function (Get $get, Set $set, ?int $state): void {
-                                $category = Category::find($state);
-                                $categorySlug = $category?->slug ?? (filled($category?->name) ? Str::slug($category->name) : '');
-
-                                $institution = Institution::find($get('institution_id'));
-                                $code = $institution?->code ?? '';
-
-                                $slug = $get('slug') ?? '';
-
-                                $base = rtrim(config('app.url') ?? url('/'), '/');
-
-                                if ($code && $categorySlug && $slug) {
-                                    $set('default_url', $base.'/'.$code.'/'.$categorySlug.'/'.$slug);
-                                }
-                            }),
+                            ->required(),
                         TextInput::make('title')
                             ->label('Judul')
                             ->required()
@@ -77,31 +51,22 @@ class PostForm
                             }),
                         TextInput::make('slug')
                             ->label('Slug')
-                            ->required()
-                            ->afterStateUpdated(function (Get $get, Set $set, ?string $state): void {
-                                $institution = Institution::find($get('institution_id'));
-                                $code = $institution?->code ?? '';
-
-                                $category = Category::find($get('category_id'));
-                                $categorySlug = $category?->slug ?? (filled($category?->name) ? Str::slug($category->name) : '');
-
-                                $slug = $state ?? '';
-
-                                $base = rtrim(config('app.url') ?? url('/'), '/');
-
-                                if ($code && $categorySlug && $slug) {
-                                    $set('default_url', $base.'/'.$code.'/'.$categorySlug.'/'.$slug);
-                                }
-                            }),
+                            ->required(),
                         RichEditor::make('content')
                             ->label('Isi')
                             ->required()
+                            ->toolbarButtons([
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [ToolbarButtonGroup::make('Heading', ['h1', 'h2', 'h3'])->icon('fi-o-heading')],
+                                [ToolbarButtonGroup::make('Alignment', ['alignStart', 'alignCenter', 'alignEnd', 'alignJustify'])],
+                                ['blockquote', 'codeBlock', 'bulletList', 'orderedList'],
+                                ['undo', 'redo'],
+                                ['attachFiles', 'link'],
+                            ])
                             ->columnSpanFull(),
                     ])->columnSpan(2),
                 Group::make()
                     ->schema([
-                        Hidden::make('default_url')
-                            ->dehydrated(),
                         Section::make('Meta')
                             ->relationship('seo')
                             ->schema([
@@ -114,15 +79,6 @@ class PostForm
                                 Textarea::make('keywords')
                                     ->label('Kata Kunci')
                                     ->rows(4),
-                                TextInput::make('canonical_url')
-                                    ->label('Canonical URL')
-                                    ->url(),
-                                Select::make('robots')
-                                    ->label('Robots')
-                                    ->options([
-                                        true => 'Index, Follow',
-                                        false => 'Noindex, Nofollow',
-                                    ]),
                             ]),
                         Section::make('#Tag')
                             ->schema([
@@ -131,6 +87,14 @@ class PostForm
                                     ->helperText('Tambahkan tag baru, pisahkan dengan koma')
                                     ->placeholder('tulis tag baru, pisah koma')
                                     ->columnSpanFull(),
+                                Radio::make('status')
+                                    ->label('Status')
+                                    ->options([
+                                        'published' => 'Published',
+                                        'draft' => 'Draft',
+                                    ])
+                                    ->default('published')
+                                    ->required(),
                             ]),
                     ])->columnSpan(1),
             ])->columns(3);

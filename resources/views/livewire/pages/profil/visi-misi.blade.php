@@ -5,7 +5,7 @@
         <div class="relative p-10 rounded-3xl bg-gradient-emerald text-white overflow-hidden">
             <div class="absolute -top-10 -right-10 size-40 bg-white/10 rounded-full blur-2xl"></div>
             <x-site.icon name="Target" class="size-12" />
-            <h2 class="mt-6 font-display text-3xl">Visi</h2>
+            <h2 class="mt-6 font-display text-3xl text-white">Visi</h2>
             <p class="mt-4 text-white/90 leading-relaxed text-lg">{{ $vision }}</p>
         </div>
 

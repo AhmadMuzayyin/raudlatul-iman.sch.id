@@ -13,7 +13,14 @@ class ManageSchedules extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah')
+                ->icon('heroicon-o-plus')
+                ->modalHeading('Tambah Jadwal')
+                ->modalDescription('Silakan isi data jadwal dengan benar.')
+                ->modalSubmitActionLabel('Simpan')
+                ->modalCancelActionLabel('Batal')
+                ->createAnotherAction(fn ($action) => $action->label('Simpan dan tambah lagi')),
         ];
     }
 }

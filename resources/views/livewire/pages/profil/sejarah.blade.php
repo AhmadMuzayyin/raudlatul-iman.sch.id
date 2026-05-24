@@ -14,7 +14,8 @@
                         <article class="p-6 rounded-2xl bg-white shadow-sm border border-primary-light/60">
                             <div class="grid md:grid-cols-[160px_1fr] gap-6 items-start">
                                 <img src="{{ $history->image ? asset('storage/' . $history->image) : 'https://picsum.photos/seed/history-' . $history->id . '/320/240' }}"
-                                    alt="" class="w-full rounded-xl object-cover aspect-[4/3]">
+                                    alt="Sejarah - {{ $history->created_at?->translatedFormat('Y') ?? 'Sejarah' }}"
+                                    class="w-full rounded-xl object-cover aspect-[4/3]">
                                 <div>
                                     <h3 class="font-display text-2xl text-dark">
                                         {{ $history->created_at?->translatedFormat('Y') ?? 'Sejarah' }}</h3>

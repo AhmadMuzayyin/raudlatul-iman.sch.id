@@ -10,6 +10,14 @@ const initNavbar = () => {
 		const overlay = navbar.querySelector('[data-navbar-overlay]');
 		const openButtons = navbar.querySelectorAll('[data-navbar-open]');
 		const closeButtons = navbar.querySelectorAll('[data-navbar-close]');
+		const mobileDetails = Array.from(navbar.querySelectorAll('[data-navbar-mobile-details]'));
+		const drawerLinks = Array.from(navbar.querySelectorAll('[data-navbar-drawer] a'));
+
+		const setExpandedState = (expanded) => {
+			openButtons.forEach((button) => {
+				button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+			});
+		};
 
 		const openDrawer = () => {
 			if (!drawer || !overlay) {
@@ -20,6 +28,10 @@ const initNavbar = () => {
 			drawer.classList.add('translate-x-0');
 			overlay.classList.remove('hidden');
 			document.body.classList.add('overflow-hidden');
+			mobileDetails.forEach((detail) => {
+				detail.open = true;
+			});
+			setExpandedState(true);
 		};
 
 		const closeDrawer = () => {
@@ -31,11 +43,18 @@ const initNavbar = () => {
 			drawer.classList.remove('translate-x-0');
 			overlay.classList.add('hidden');
 			document.body.classList.remove('overflow-hidden');
+			setExpandedState(false);
 		};
 
 		openButtons.forEach((button) => button.addEventListener('click', openDrawer));
 		closeButtons.forEach((button) => button.addEventListener('click', closeDrawer));
+		drawerLinks.forEach((link) => link.addEventListener('click', closeDrawer));
 		overlay?.addEventListener('click', closeDrawer);
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				closeDrawer();
+			}
+		});
 
 		const updateScrolledState = () => {
 			const scrolled = window.scrollY > 20;
@@ -90,7 +109,7 @@ const initCarousel = () => {
 			dots.forEach((dot, dotIndex) => {
 				const active = dotIndex === index;
 				dot.classList.toggle('w-10', active);
-				dot.classList.toggle('w-2', !active);
+				dot.classList.toggle('w-4', !active);
 				dot.classList.toggle('bg-primary', active);
 				dot.classList.toggle('bg-white/50', !active);
 				dot.setAttribute('aria-pressed', active ? 'true' : 'false');
@@ -160,6 +179,54 @@ const initStatsCounters = () => {
 	});
 };
 
+const initAgendaTabs = () => {
+	document.querySelectorAll('[data-agenda-tabs]').forEach((tabs) => {
+		if (tabs.dataset.initialized === 'true') {
+			return;
+		}
+
+		tabs.dataset.initialized = 'true';
+
+		const buttons = Array.from(tabs.querySelectorAll('[data-agenda-tab]'));
+		const items = Array.from(tabs.querySelectorAll('[data-agenda-item]'));
+		const emptyState = tabs.querySelector('[data-agenda-empty]');
+
+		const applyFilter = (activeTab) => {
+			let visibleCount = 0;
+
+			buttons.forEach((button) => {
+				const isActive = button.dataset.agendaTab === activeTab;
+				button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+				button.classList.toggle('bg-primary', isActive);
+				button.classList.toggle('text-white', isActive);
+				button.classList.toggle('shadow-sm', isActive);
+				button.classList.toggle('bg-white', !isActive);
+				button.classList.toggle('text-dark', !isActive);
+				button.classList.toggle('hover:text-primary', !isActive);
+			});
+
+			items.forEach((item) => {
+				const matches = activeTab === 'all' || item.dataset.agendaInstitution === activeTab;
+				item.classList.toggle('hidden', !matches);
+
+				if (matches) {
+					visibleCount += 1;
+				}
+			});
+
+			if (emptyState) {
+				emptyState.classList.toggle('hidden', visibleCount > 0);
+			}
+		};
+
+		buttons.forEach((button) => {
+			button.addEventListener('click', () => applyFilter(button.dataset.agendaTab ?? 'all'));
+		});
+
+		applyFilter('all');
+	});
+};
+
 const initTestimonialCarousels = () => {
 	document.querySelectorAll('[data-testimonial-carousel]').forEach((carousel) => {
 		if (carousel.dataset.initialized === 'true') {
@@ -168,37 +235,105 @@ const initTestimonialCarousels = () => {
 
 		carousel.dataset.initialized = 'true';
 
+		const track = carousel.querySelector('[data-testimonial-track]');
 		const slides = Array.from(carousel.querySelectorAll('[data-testimonial-slide]'));
 		const prevButton = carousel.querySelector('[data-testimonial-prev]');
 		const nextButton = carousel.querySelector('[data-testimonial-next]');
-		const dots = Array.from(carousel.querySelectorAll('[data-testimonial-dot]'));
+		const dotsContainer = carousel.querySelector('[data-testimonial-dots]');
 		const interval = Number(carousel.dataset.interval ?? '6000');
-		let index = 0;
+		let pageIndex = 0;
+		let itemsPerView = 1;
+		let totalPages = 1;
+		let dots = [];
 
-		const showSlide = (nextIndex) => {
-			index = (nextIndex + slides.length) % slides.length;
+		if (!track || slides.length === 0) {
+			return;
+		}
 
-			slides.forEach((slide, slideIndex) => {
-				const active = slideIndex === index;
-				slide.classList.toggle('hidden', !active);
-				slide.classList.toggle('block', active);
-			});
+		const resolveItemsPerView = () => {
+			if (window.innerWidth >= 1024) return 3;
+			if (window.innerWidth >= 768) return 2;
+			return 1;
+		};
 
-			dots.forEach((dot, dotIndex) => {
-				const active = dotIndex === index;
-				dot.classList.toggle('w-8', active);
-				dot.classList.toggle('w-2', !active);
-				dot.classList.toggle('bg-primary', active);
-				dot.classList.toggle('bg-primary/30', !active);
+		const updateSlideWidths = () => {
+			slides.forEach((slide) => {
+				slide.style.flex = `0 0 ${100 / itemsPerView}%`;
 			});
 		};
 
-		prevButton?.addEventListener('click', () => showSlide(index - 1));
-		nextButton?.addEventListener('click', () => showSlide(index + 1));
-		dots.forEach((dot, dotIndex) => dot.addEventListener('click', () => showSlide(dotIndex)));
+		const buildDots = () => {
+			if (!dotsContainer) {
+				return;
+			}
 
-		showSlide(index);
-		carousel._testimonialTimer = window.setInterval(() => showSlide(index + 1), interval);
+			dotsContainer.innerHTML = '';
+			dots = [];
+
+			for (let page = 0; page < totalPages; page += 1) {
+				const dot = document.createElement('button');
+				dot.type = 'button';
+				dot.className = 'h-4 rounded-full transition-all';
+				dot.setAttribute('aria-label', `Testimoni ${page + 1}`);
+				dot.addEventListener('click', () => showSlide(page));
+				dotsContainer.append(dot);
+				dots.push(dot);
+			}
+		};
+
+		const showSlide = (nextIndex) => {
+			pageIndex = (nextIndex + totalPages) % totalPages;
+
+			const startIndex = Math.min(pageIndex * itemsPerView, Math.max(0, slides.length - itemsPerView));
+			const translatePercent = (startIndex * 100) / itemsPerView;
+			track.style.transform = `translateX(-${translatePercent}%)`;
+
+			dots.forEach((dot, dotIndex) => {
+				const active = dotIndex === pageIndex;
+				dot.classList.toggle('w-8', active);
+				dot.classList.toggle('w-4', !active);
+				dot.classList.toggle('bg-primary', active);
+				dot.classList.toggle('bg-primary/30', !active);
+				dot.setAttribute('aria-pressed', active ? 'true' : 'false');
+			});
+		};
+
+		const applyLayout = () => {
+			itemsPerView = resolveItemsPerView();
+			totalPages = Math.max(1, Math.ceil(slides.length / itemsPerView));
+			updateSlideWidths();
+			buildDots();
+			showSlide(0);
+		};
+
+		const restartTimer = () => {
+			window.clearInterval(carousel._testimonialTimer);
+			carousel._testimonialTimer = window.setInterval(() => showSlide(pageIndex + 1), interval);
+		};
+
+		prevButton?.addEventListener('click', () => {
+			showSlide(pageIndex - 1);
+			restartTimer();
+		});
+		nextButton?.addEventListener('click', () => {
+			showSlide(pageIndex + 1);
+			restartTimer();
+		});
+
+		applyLayout();
+		restartTimer();
+
+		window.addEventListener('resize', () => {
+			const nextItemsPerView = resolveItemsPerView();
+
+			if (nextItemsPerView !== itemsPerView) {
+				applyLayout();
+				restartTimer();
+			}
+		});
+
+		carousel.addEventListener('mouseenter', () => window.clearInterval(carousel._testimonialTimer));
+		carousel.addEventListener('mouseleave', restartTimer);
 	});
 };
 
@@ -206,8 +341,30 @@ const bootstrap = () => {
 	initNavbar();
 	initCarousel();
 	initStatsCounters();
+	initAgendaTabs();
 	initTestimonialCarousels();
 };
 
 document.addEventListener('DOMContentLoaded', bootstrap);
 document.addEventListener('livewire:navigated', bootstrap);
+
+const startLivewireDomObserver = () => {
+	if (!document.body) {
+		return;
+	}
+
+	const livewireDomObserver = new MutationObserver(() => {
+		bootstrap();
+	});
+
+	livewireDomObserver.observe(document.body, {
+		childList: true,
+		subtree: true,
+	});
+};
+
+if (document.body) {
+	startLivewireDomObserver();
+} else {
+	document.addEventListener('DOMContentLoaded', startLivewireDomObserver, { once: true });
+}

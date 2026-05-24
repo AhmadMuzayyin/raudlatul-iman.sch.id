@@ -19,11 +19,6 @@ return new class extends Migration
             $table->text('meta_keywords')->nullable();
             $table->string('contact_email')->nullable();
             $table->string('contact_phone')->nullable();
-            $table->string('og_title')->nullable();
-            $table->text('og_description')->nullable();
-            $table->string('og_image')->nullable();
-            $table->string('canonical_url')->nullable();
-            $table->boolean('robots')->default(true);
             $table->boolean('maintenance_mode')->default(false);
             $table->boolean('enable_comments')->default(true);
             $table->timestamps();

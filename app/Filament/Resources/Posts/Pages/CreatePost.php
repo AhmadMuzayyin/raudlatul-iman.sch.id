@@ -6,6 +6,7 @@ use App\Filament\Resources\Posts\PostResource;
 use App\Models\Tag;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class CreatePost extends CreateRecord
@@ -20,24 +21,18 @@ class CreatePost extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // collect new tag names
+        $data['user_id'] = $data['user_id'] ?? Auth::id();
         $this->pendingTagNames = $data['tag_names'] ?? null;
-
-        // collect selected existing tag ids (checkbox list)
         $this->pendingSelectedTagIds = $data['tags'] ?? [];
 
-        // collect seo data from nested 'seo' relationship input if present
         $seo = $data['seo'] ?? [];
         $this->pendingSeoData = [
             'title' => $seo['title'] ?? null,
             'description' => $seo['description'] ?? null,
             'keywords' => $seo['keywords'] ?? null,
-            'canonical_url' => $seo['canonical_url'] ?? $data['default_url'] ?? null,
-            'robots' => $seo['robots'] ?? true,
         ];
 
-        // unset helper inputs before letting Filament create the post
-        unset($data['tag_names'], $data['tags'], $data['seo'], $data['default_url']);
+        unset($data['tag_names'], $data['tags'], $data['seo']);
 
         return $data;
     }
@@ -47,11 +42,9 @@ class CreatePost extends CreateRecord
         DB::beginTransaction();
 
         try {
-            // create seo only if there is meaningful seo content (title, description, canonical, or keywords)
             $seoPending = $this->pendingSeoData ?? [];
             $hasSeoContent = filled($seoPending['title'] ?? null)
                 || filled($seoPending['description'] ?? null)
-                || filled($seoPending['canonical_url'] ?? null)
                 || filled($seoPending['keywords'] ?? null);
 
             if ($hasSeoContent) {
@@ -77,7 +70,6 @@ class CreatePost extends CreateRecord
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            // remove the post we just created to avoid partial state
             try {
                 $this->record->delete();
             } catch (\Throwable $_) {

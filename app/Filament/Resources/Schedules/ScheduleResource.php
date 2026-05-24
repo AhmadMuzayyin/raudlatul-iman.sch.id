@@ -10,6 +10,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Resources\Resource;
@@ -17,26 +18,45 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class ScheduleResource extends Resource
 {
     protected static ?string $model = Schedule::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
+
+    protected static string|UnitEnum|null $navigationGroup = 'Menu';
+
+    protected static ?string $navigationLabel = 'Agenda';
 
     protected static ?string $recordTitleAttribute = 'Agenda';
+
+    protected static ?int $navigationSort = 4;
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
+                Select::make('institution_id')
+                    ->label('Lembaga')
+                    ->relationship('institution', 'name')
+                    ->required(),
+                Select::make('category_id')
+                    ->label('Kategori')
+                    ->relationship('category', 'name')
+                    ->required(),
                 TextInput::make('title')
+                    ->label('Agenda')
                     ->required(),
-                TimePicker::make('start_time')
+                TimePicker::make('time')
+                    ->label('Jam')
                     ->required(),
-                TimePicker::make('end_time')
+                TextInput::make('location')
+                    ->label('Lokasi')
                     ->required(),
                 DatePicker::make('date')
+                    ->label('Tanggal')
                     ->required(),
             ]);
     }
@@ -46,22 +66,31 @@ class ScheduleResource extends Resource
         return $table
             ->recordTitleAttribute('Agenda')
             ->columns([
-                TextColumn::make('title')
+                TextColumn::make('institution.name')
+                    ->label('Lembaga')
                     ->searchable(),
-                TextColumn::make('start_time')
+                TextColumn::make('title')
+                    ->label('Agenda')
+                    ->searchable(),
+                TextColumn::make('time')
+                    ->label('Jam')
                     ->time()
                     ->sortable(),
-                TextColumn::make('end_time')
-                    ->time()
+                TextColumn::make('location')
+                    ->label('Lokasi')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('date')
+                    ->label('Tanggal')
                     ->date()
                     ->sortable(),
                 TextColumn::make('created_at')
+                    ->label('Dibuat Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
+                    ->label('Diperbarui Pada')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
@@ -70,8 +99,16 @@ class ScheduleResource extends Resource
                 //
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()
+                    ->label('Ubah')
+                    ->icon('heroicon-o-pencil-square'),
+                DeleteAction::make()
+                    ->label('Hapus')
+                    ->icon('heroicon-o-trash')
+                    ->modalHeading('Hapus Data agenda')
+                    ->modalDescription('Anda yakin ingin menghapus data agenda ini?')
+                    ->modalSubmitActionLabel('Hapus')
+                    ->modalCancelActionLabel('Batal'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
