@@ -28,7 +28,7 @@ class Informasi extends Component
     {
         $posts = $this->postsQuery()
             ->get()
-            ->map(fn (Post $post): array => $this->toPostCard($post));
+            ->map(fn(Post $post): array => $this->toPostCard($post));
 
         $popularPosts = Post::query()
             ->published()
@@ -38,7 +38,7 @@ class Informasi extends Component
             ->latest('created_at')
             ->take(5)
             ->get()
-            ->map(fn (Post $post): array => $this->toPostCard($post, $post->post_views_count ?? 0))
+            ->map(fn(Post $post): array => $this->toPostCard($post, $post->post_views_count ?? 0))
             ->values();
 
         $latestPosts = Post::query()
@@ -47,7 +47,7 @@ class Informasi extends Component
             ->latest('created_at')
             ->take(5)
             ->get()
-            ->map(fn (Post $post): array => $this->toPostCard($post))
+            ->map(fn(Post $post): array => $this->toPostCard($post))
             ->values();
 
         return view('livewire.pages.informasi', [
@@ -76,12 +76,12 @@ class Informasi extends Component
                 $search = trim($this->search);
 
                 $query->where(function (Builder $searchQuery) use ($search): void {
-                    $searchQuery->where('title', 'like', '%'.$search.'%');
+                    $searchQuery->where('title', 'like', '%' . $search . '%');
 
                     if ($this->supportsFullTextSearch()) {
                         $searchQuery->orWhereFullText('content', $search);
                     } else {
-                        $searchQuery->orWhere('content', 'like', '%'.$search.'%');
+                        $searchQuery->orWhere('content', 'like', '%' . $search . '%');
                     }
                 });
             })

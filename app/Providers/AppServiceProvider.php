@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         View::share([
             'settings' => Setting::query()->first(),
             'navLinks' => Navlink::query()
-                ->with(['children' => fn ($query) => $query->where('is_active', true)->orderBy('order', 'asc')])
+                ->with(['children' => fn($query) => $query->where('is_active', true)->orderBy('order', 'asc')])
                 ->whereNull('parent_id')
                 ->where('is_active', true)
                 ->orderBy('order', 'asc')
